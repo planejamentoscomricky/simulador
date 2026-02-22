@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador — Consórcio vs Financiamento</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 960px;
+    margin: 0 auto 10px;
+    padding: 10px 0;
+  }
+
+  .topbar-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, #00e676, #00bcd4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .topbar-role {
+    font-size: 0.65rem;
+    color: #444;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .topbar-contact {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #00e67610;
+    border: 1px solid #00e67625;
+    border-radius: 30px;
+    padding: 7px 16px;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+
+  .topbar-contact:hover { background: #00e67620; }
+  .topbar-contact span { font-size: 0.78rem; color: #00e676; font-weight: 600; }
+
+  .header {
+    text-align: center;
+    padding: 20px 0 20px;
+  }
+
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, #00e676, #00bcd4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .header p {
+    color: #666;
+    font-size: 0.85rem;
+    margin-top: 6px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* INPUTS */
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .input-group {
+    background: #13131a;
+    border: 1px solid #1e1e2e;
+    border-radius: 12px;
+    padding: 16px 20px;
+    transition: border-color 0.2s;
+  }
+
+  .input-group:hover { border-color: #00e676; }
+
+  .input-group label {
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #555;
+    margin-bottom: 8px;
+  }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .prefix {
+    font-size: 0.85rem;
+    color: #00e676;
+    font-weight: 600;
+  }
+
+  .input-group input, .input-group select {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    outline: none;
+  }
+
+  .input-group select option { background: #13131a; }
+
+  .btn-calcular {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #00e676, #00bcd4);
+    border: none;
+    border-radius: 12px;
+    color: #0a0a0f;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+    cursor: pointer;
+    margin-bottom: 30px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .btn-calcular:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-calcular:active { transform: translateY(0); }
+
+  /* RESULTS */
+  .results { display: none; }
+  .results.show { display: block; }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .card {
+    border-radius: 14px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-consorcio {
+    background: linear-gradient(135deg, #0d2b1a, #0a1f14);
+    border: 1px solid #00e67633;
+  }
+
+  .card-price {
+    background: linear-gradient(135deg, #2b1a0d, #1f140a);
+    border: 1px solid #ff6b3533;
+  }
+
+  .card-sac {
+    background: linear-gradient(135deg, #1a1a2b, #14140f);
+    border: 1px solid #7c4dff33;
+  }
+
+  .card-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+
+  .card-consorcio .card-label { color: #00e676; }
+  .card-price .card-label { color: #ff6b35; }
+  .card-sac .card-label { color: #7c4dff; }
+
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #ffffff08;
+    font-size: 0.78rem;
+  }
+
+  .card-row:last-child { border-bottom: none; }
+  .card-row .label { color: #666; }
+  .card-row .value { font-weight: 600; font-size: 0.85rem; }
+
+  .card-row .value.green { color: #00e676; }
+  .card-row .value.red { color: #ff6b35; }
+  .card-row .value.purple { color: #7c4dff; }
+  .card-row .value.white { color: #fff; }
+
+  .total-row {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #ffffff15;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .total-row .total-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+  }
+
+  .total-row .total-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+  }
+
+  /* ECONOMIA BOX */
+  .economia-box {
+    background: #13131a;
+    border: 1px solid #00e67633;
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+  }
+
+  .economia-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    color: #00e676;
+    margin-bottom: 16px;
+  }
+
+  .economia-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .economia-item {
+    background: #0d0d15;
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .economia-item .eco-label { font-size: 0.8rem; color: #666; }
+  .economia-item .eco-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    color: #00e676;
+    letter-spacing: 1px;
+  }
+
+  .highlight-bar {
+    background: linear-gradient(90deg, #00e67615, transparent);
+    border-left: 3px solid #00e676;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 16px;
+    margin: 12px 0;
+    font-size: 0.85rem;
+    color: #ccc;
+  }
+
+  .highlight-bar strong { color: #00e676; }
+
+  /* BADGE */
+  .badge-sem-entrada {
+    display: inline-block;
+    background: #00e67620;
+    color: #00e676;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  .badge-exige-entrada {
+    display: inline-block;
+    background: #ff6b3520;
+    color: #ff6b35;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 700px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .inputs-grid { grid-template-columns: 1fr; }
+    .economia-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 2rem; }
+    .topbar { flex-direction: column; gap: 10px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-name">Ricky P. Fonseca</div>
+      <div class="topbar-role">Consultor Financeiro</div>
+    </div>
+  </div>
+
+  <div class="header">
+    <h1>Consórcio vs Financiamento</h1>
+  </div>
+
+  <!-- INPUTS -->
+  <div class="inputs-grid">
+    <div class="input-group">
+      <label>Valor do Bem (R$)</label>
+      <div class="input-row">
+        <span class="prefix">R$</span>
+        <input type="number" id="valorBem" value="318690" min="1000" />
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Taxa de Administração Consórcio (%)</label>
+      <div class="input-row">
+        <input type="number" id="taxaAdmin" value="18" step="0.5" min="1" max="40" />
+        <span class="prefix">%</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Prazo do Consórcio (meses)</label>
+      <div class="input-row">
+        <input type="number" id="prazoConsorcio" value="200" min="12" max="240" />
+        <span class="prefix">meses</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Prazo Financiamento (meses)</label>
+      <div class="input-row">
+        <input type="number" id="prazoFinanc" value="360" min="12" max="420" />
+        <span class="prefix">meses</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Taxa Juros Financiamento (% ao mês)</label>
+      <div class="input-row">
+        <input type="number" id="taxaJuros" value="0.91" step="0.01" min="0.1" max="5" />
+        <span class="prefix">% a.m.</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Entrada Financiamento (%)</label>
+      <div class="input-row">
+        <input type="number" id="entradaPerc" value="30" step="1" min="0" max="90" />
+        <span class="prefix">%</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-calcular" onclick="calcular()">⚡ CALCULAR AGORA</button>
+
+  <!-- RESULTS -->
+  <div class="results" id="results">
+
+    <div class="cards-grid">
+
+      <!-- CONSÓRCIO -->
+      <div class="card card-consorcio">
+        <div class="card-label">✅ Consórcio</div>
+        <span class="badge-sem-entrada">Sem entrada obrigatória</span>
+
+        <div style="margin-top:14px">
+          <div class="card-row">
+            <span class="label">Parcela mensal</span>
+            <span class="value green" id="c-parcela">—</span>
+          </div>
+          <div class="card-row">
+            <span class="label">Taxa administração</span>
+            <span class="value white" id="c-taxa">—</span>
+          </div>
+          <div class="card-row">
+            <span class="label">Entrada</span>
+            <span class="value green">R$ 0,00</span>
+          </div>
+          <div class="card-row">
+            <span class="label">Juros pagos</span>
+            <span class="value green">R$ 0,00</span>
+          </div>
+        </div>
+
+        <div class="total-row">
+          <span class="total-label">Total pago</span>
+          <span class="total-value" style="color:#00e676" id="c-total">—</span>
+        </div>
+      </div>
+
+      <!-- PRICE -->
+      <div class="card card-price">
+        <div class="card-label">⚠️ Financiamento Price</div>
+        <span class="badge-exige-entrada" id="p-badge-entrada">Exige entrada</span>
+
+        <div style="margin-top:14px">
+          <div class="card-row">
+            <span class="label">Parcela (fixa)</span>
+            <span class="value red" id="p-parcela">—</span>
+          </div>
+          <div class="card-row">
+            <span class="label">Entrada exigida</span>
+            <span class="value red" id="p-entrada">—</span>
+          </div>
+          <div class="card-row">
+            <span class="label">Renda mínima</span>
+            <span class="value white" id="p-renda">—</span>
+          </div>
+          <div class="card-row">
+            <span class="label">Juros pagos</span>
+            <span class="value red" id="p-juros">—</span>
+          </div>
+        </div>
+
+        <div class="total-row">
+          <span class="total-label">Total pago</span>
+          <span class="total-value" style="color:#ff6b35" id="p-total">—</span>
+        </div>
+      </div>
+
+      <!-- SAC -->
+      <div class="card card-sac">
+        <div class="card-label">⚠️ Financiamento SAC</div>
+        <span class="badge-exige-entrada" id="s-badge-entrada">Exige entrada</span>
+
+        <div style="margin-top:14px">
+          <div class="card-row">
+            <span class="label">1ª parcela</span>
+            <span class="value purple" id="s-parcela1">—</span>
+          </div>
+          <div class="card-row">
+            <span class="label">Última parcela</span>
+            <span class="value white" id="s-parcelaUlt">—</span>
+          </div>
+          <div class="card-row">
+            <span class="label">Entrada exigida</span>
+            <span class="value red" id="s-entrada">—</span>
+          </div>
+          <div class="card-row">
+            <span class="label">Juros pagos</span>
+            <span class="value purple" id="s-juros">—</span>
+          </div>
+        </div>
+
+        <div class="total-row">
+          <span class="total-label">Total pago</span>
+          <span class="total-value" style="color:#7c4dff" id="s-total">—</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ECONOMIA -->
+    <div class="economia-box">
+      <div class="economia-title">💰 Economia do Consórcio vs Financiamento</div>
+      <div class="economia-grid">
+        <div class="economia-item">
+          <div>
+            <div class="eco-label">Você economiza vs Price</div>
+            <div style="font-size:0.72rem;color:#444;margin-top:2px">ao escolher consórcio</div>
+          </div>
+          <div class="eco-value" id="eco-price">—</div>
+        </div>
+        <div class="economia-item">
+          <div>
+            <div class="eco-label">Você economiza vs SAC</div>
+            <div style="font-size:0.72rem;color:#444;margin-top:2px">ao escolher consórcio</div>
+          </div>
+          <div class="eco-value" id="eco-sac">—</div>
+        </div>
+      </div>
+
+      <div class="highlight-bar" id="highlight-frase" style="margin-top:16px"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  function fmt(v) {
+    return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function calcular() {
+    const bem = parseFloat(document.getElementById('valorBem').value) || 0;
+    const txAdmin = parseFloat(document.getElementById('taxaAdmin').value) / 100 || 0;
+    const prazoC = parseInt(document.getElementById('prazoConsorcio').value) || 200;
+    const prazoF = parseInt(document.getElementById('prazoFinanc').value) || 360;
+    const txMes = parseFloat(document.getElementById('taxaJuros').value) / 100 || 0;
+    const entPerc = parseFloat(document.getElementById('entradaPerc').value) / 100 || 0;
+
+    const taxaAdminValor = bem * txAdmin;
+    const totalConsorcio = bem + taxaAdminValor;
+    const parcelaConsorcio = totalConsorcio / prazoC;
+
+    const entrada = bem * entPerc;
+    const financiado = bem - entrada;
+
+    let parcelaPrice = 0;
+    if (txMes > 0) {
+      parcelaPrice = financiado * (txMes * Math.pow(1 + txMes, prazoF)) / (Math.pow(1 + txMes, prazoF) - 1);
+    } else {
+      parcelaPrice = financiado / prazoF;
+    }
+    const totalPrice = entrada + (parcelaPrice * prazoF);
+    const jurosPrice = totalPrice - bem;
+    const rendaMinPrice = parcelaPrice / 0.30;
+
+    const amortSAC = financiado / prazoF;
+    const parcela1SAC = amortSAC + (financiado * txMes);
+    const parcelaUltSAC = amortSAC + (amortSAC * txMes);
+
+    let totalSAC = entrada;
+    for (let i = 1; i <= prazoF; i++) {
+      const saldo = financiado - amortSAC * (i - 1);
+      totalSAC += amortSAC + (saldo * txMes);
+    }
+    const jurosSAC = totalSAC - bem;
+
+    const ecoPrice = totalPrice - totalConsorcio;
+    const ecoSAC = totalSAC - totalConsorcio;
+
+    document.getElementById('c-parcela').textContent = fmt(parcelaConsorcio);
+    document.getElementById('c-taxa').textContent = fmt(taxaAdminValor);
+    document.getElementById('c-total').textContent = fmt(totalConsorcio);
+
+    document.getElementById('p-parcela').textContent = fmt(parcelaPrice);
+    document.getElementById('p-entrada').textContent = fmt(entrada);
+    document.getElementById('p-renda').textContent = fmt(rendaMinPrice);
+    document.getElementById('p-juros').textContent = fmt(jurosPrice);
+    document.getElementById('p-total').textContent = fmt(totalPrice);
+    document.getElementById('p-badge-entrada').textContent = entPerc > 0 ? `Exige ${(entPerc*100).toFixed(0)}% de entrada` : 'Sem entrada';
+
+    document.getElementById('s-parcela1').textContent = fmt(parcela1SAC);
+    document.getElementById('s-parcelaUlt').textContent = fmt(parcelaUltSAC);
+    document.getElementById('s-entrada').textContent = fmt(entrada);
+    document.getElementById('s-juros').textContent = fmt(jurosSAC);
+    document.getElementById('s-total').textContent = fmt(totalSAC);
+    document.getElementById('s-badge-entrada').textContent = entPerc > 0 ? `Exige ${(entPerc*100).toFixed(0)}% de entrada` : 'Sem entrada';
+
+    document.getElementById('eco-price').textContent = fmt(ecoPrice);
+    document.getElementById('eco-sac').textContent = fmt(ecoSAC);
+
+    document.getElementById('highlight-frase').innerHTML =
+      `No financiamento, o banco lucra <strong>${fmt(jurosPrice)}</strong> em juros num bem de <strong>${fmt(bem)}</strong>. No consórcio, a taxa total é <strong>${fmt(taxaAdminValor)}</strong>. Diferença: <strong>${fmt(ecoPrice)}</strong> no bolso do seu cliente.`;
+
+    document.getElementById('results').classList.add('show');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  window.onload = calcular;
+</script>
+</body>
+</html>
